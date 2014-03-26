@@ -18,7 +18,7 @@ class KinesisProxyTest extends \PHPUnit_Framework_TestCase
   public function testFactory_001()
   {
     $dummy_kinesis = KinesisClient::factory(array(
-      'key' => 'XXXXX',
+      'key' => 'XXXXXX',
       'secret' => 'XXXXX',
       'region' => Region::VIRGINIA
     ));
