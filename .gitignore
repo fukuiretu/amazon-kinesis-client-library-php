@@ -1,0 +1,6 @@
+vendor
+composer.lock
+composer.phar
+.DS_Store
+.tags_sorted_by_file
+.tags

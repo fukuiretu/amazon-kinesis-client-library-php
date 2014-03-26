@@ -1,0 +1,25 @@
+{
+    "name": "fukuiretu/amazon-kinesis-client-library-php",
+    "description": "Amazon Kinesis Wrapper Class",
+    "keywords": ["Kinesis", "AWS", "Amazon Kinesis"],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/fukuiretu/amazon-kinesis-client-library-php",
+    "authors": [
+      {
+        "name": "Fukui Retu",
+        "email": "s0232101@gmail.com"
+      }
+    ],
+    "require": {
+        "aws/aws-sdk-php": "2.5.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.0.9"
+    },
+    "autoload": {
+      "psr-0": {
+        "Rf\\Aws\\Kinesis\\ClientLibrary": "src/"
+      }
+    }
+}
