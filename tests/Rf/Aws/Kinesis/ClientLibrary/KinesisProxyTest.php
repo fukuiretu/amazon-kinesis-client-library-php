@@ -198,7 +198,7 @@ class KinesisProxyTest extends \PHPUnit_Framework_TestCase
 
   public function testCheckpoint_001()
   {
-    $store_dir = '/var/amazon-kinesis/dummy-stream-name';
+    $store_dir = '/tmp/amazon-kinesis/dummy-stream-name';
     exec("rm -r $store_dir");
 
     $proxy = $this->getMockBuilder('Rf\Aws\Kinesis\ClientLibrary\KinesisProxy')
