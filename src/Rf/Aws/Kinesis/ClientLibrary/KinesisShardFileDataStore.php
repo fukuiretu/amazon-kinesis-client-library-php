@@ -7,11 +7,16 @@ use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisShard;
 
 class KinesisShardFileDataStore implements KinesisShardDataStore
 {
-  const DATA_STORE_FILE_DIR = '/tmp/amazon-kinesis';
+  private $data_store_file_dir;
+
+  public function __construct($data_store_file_dir)
+  {
+    $this->data_store_file_dir = $data_store_file_dir;
+  }
 
   public function modify(KinesisShard $shard)
   {
-      $store_dir = static::DATA_STORE_FILE_DIR . '/' . $shard->getStreamName();
+      $store_dir = $this->data_store_file_dir . '/' . $shard->getStreamName();
       if (!file_exists($store_dir)) {
         mkdir($store_dir, 0755, true);
       }
@@ -32,7 +37,7 @@ class KinesisShardFileDataStore implements KinesisShardDataStore
   {
     $result = array();
 
-    $store_dir = static::DATA_STORE_FILE_DIR . '/' . $target_stream_name;
+    $store_dir = $this->data_store_file_dir . '/' . $target_stream_name;
     if (!file_exists($store_dir)) {
       return $result;
     }

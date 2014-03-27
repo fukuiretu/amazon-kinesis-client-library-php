@@ -22,12 +22,12 @@ class KinesisProxyTest extends \PHPUnit_Framework_TestCase
       'secret' => 'XXXXX',
       'region' => Region::VIRGINIA
     ));
-    $data_store = new KinesisShardFileDataStore();
+    $data_store = new KinesisShardFileDataStore('/tmp/amazon-kinesis');
     $stream_name = 'dummy';
 
     $proxy1 = KinesisProxy::factory($dummy_kinesis, $data_store, $stream_name, false);
     $proxy2 = KinesisProxy::factory($dummy_kinesis, $data_store, $stream_name, false);
-    $proxy3 = KinesisProxy::factory($dummy_kinesis, new KinesisShardFileDataStore(), $stream_name, false);
+    $proxy3 = KinesisProxy::factory($dummy_kinesis, new KinesisShardFileDataStore('/tmp/amazon-kinesis'), $stream_name, false);
     $proxy4 = KinesisProxy::factory($dummy_kinesis, $data_store, 'hoge', false);
 
     $this->assertTrue(spl_object_hash($proxy1) === spl_object_hash($proxy2));
@@ -208,7 +208,7 @@ class KinesisProxyTest extends \PHPUnit_Framework_TestCase
 
     $proxy->expects($this->any())
       ->method('getDataStore')
-      ->will($this->returnValue(new KinesisShardFileDataStore()));
+      ->will($this->returnValue(new KinesisShardFileDataStore('/tmp/amazon-kinesis')));
 
     $shard = new KinesisShard();
     $shard->setStreamName('dummy-stream-name');
