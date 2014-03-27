@@ -7,7 +7,7 @@ use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisShard;
 
 class KinesisShardFileDataStore implements KinesisShardDataStore
 {
-  const DATA_STORE_FILE_DIR = '/var/amazon-kinesis';
+  const DATA_STORE_FILE_DIR = '/tmp/amazon-kinesis';
 
   public function modify(KinesisShard $shard)
   {
