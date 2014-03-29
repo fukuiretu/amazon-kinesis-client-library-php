@@ -105,9 +105,7 @@ class KinesisProxy
           $starting_sequence_number =  $sequence_number_range['StartingSequenceNumber'];
           
           $shard_obj = new KinesisShard();
-          $shard_obj->setStreamName($this->stream_name);
-          $shard_obj->setShardId($shard_id);
-          $shard_obj->setSequenceNumber($starting_sequence_number);
+          $shard_obj->setStreamName($this->stream_name)->setShardId($shard_id)->setSequenceNumber($starting_sequence_number);
 
           $result[$shard_id] = $shard_obj;
         }
