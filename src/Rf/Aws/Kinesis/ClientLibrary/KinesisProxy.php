@@ -136,7 +136,7 @@ class KinesisProxy
       }
 
       if ($parallel) {
-        // TODO 未実装
+        throw new \RuntimeException('parallel is not implemented');
       } else {
         $data_records = $this->_findDataRecords($shard, $limit, $max_loop_count);
       }

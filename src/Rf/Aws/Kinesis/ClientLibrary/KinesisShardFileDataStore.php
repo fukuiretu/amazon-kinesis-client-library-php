@@ -7,16 +7,19 @@ use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisShard;
 
 class KinesisShardFileDataStore implements KinesisShardDataStore
 {
-  private $data_store_file_dir;
+  private $data_store_dir;
 
-  public function __construct($data_store_file_dir)
+  public function __construct($data_store_dir)
   {
-    $this->data_store_file_dir = $data_store_file_dir;
+    $this->data_store_dir = $data_store_dir;
   }
 
+  /**
+   * @Override
+   */
   public function modify(KinesisShard $shard)
   {
-      $store_dir = $this->data_store_file_dir . '/' . $shard->getStreamName();
+      $store_dir = $this->data_store_dir . '/' . $shard->getStreamName();
       if (!file_exists($store_dir)) {
         mkdir($store_dir, 0755, true);
       }
@@ -33,11 +36,14 @@ class KinesisShardFileDataStore implements KinesisShardDataStore
       fclose($file_handle);
   }
 
+  /**
+   * @Override
+   */
   public function restore($target_stream_name)
   {
     $result = array();
 
-    $store_dir = $this->data_store_file_dir . '/' . $target_stream_name;
+    $store_dir = $this->data_store_dir . '/' . $target_stream_name;
     if (!file_exists($store_dir)) {
       return $result;
     }
@@ -53,9 +59,7 @@ class KinesisShardFileDataStore implements KinesisShardDataStore
           while ($shard_info = fgetcsv($file_handle)) {
             list($stream_name, $shard_id, $sequence_number) = $shard_info;
             $shard = new KinesisShard();
-            $shard->setStreamName($stream_name);
-            $shard->setShardId($shard_id);
-            $shard->setSequenceNumber($sequence_number);
+            $shard->setStreamName($stream_name)->setShardId($shard_id)->setSequenceNumber($sequence_number);
 
             $result[$shard_id] = $shard;
           }
