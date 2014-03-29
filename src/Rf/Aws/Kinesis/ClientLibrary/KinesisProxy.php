@@ -3,7 +3,7 @@
 namespace Rf\Aws\Kinesis\ClientLibrary;
 
 use Aws\Kinesis\KinesisClient;
-use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisProxyException;
+use Rf\Aws\Kinesis\ClientLibrary\Exception\KinesisProxyException;
 use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisShard;
 use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisDataRecord;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShardDataStore;
@@ -126,11 +126,11 @@ class KinesisProxy
   public function findDataRecords($target_shard_id = null, $limit = 1000, $max_loop_count = 5, $parallel = false)
   {
     if (!$this->inited) {
-      throw new Exception("Can not use initialize because not yet.");
+      throw new KinesisProxyException("Can not use initialize because not yet.");
     }
 
     if ($parallel && !extension_loaded('pthreads')) {
-      throw new \RuntimeException('pthreads is required');
+      throw new KinesisProxyException('pthreads is required');
     }
 
     try {
@@ -218,6 +218,10 @@ class KinesisProxy
 
   public function checkpoint(KinesisShard $shard)
   {
+    if (!$this->inited) {
+      throw new KinesisProxyException("Can not use initialize because not yet.");
+    }
+
     try {
       $data_store = $this->getDataStore();
       $data_store->modify($shard);

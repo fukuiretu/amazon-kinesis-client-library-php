@@ -199,22 +199,28 @@ class KinesisProxyTest extends \PHPUnit_Framework_TestCase
   public function testCheckpoint_001()
   {
     $store_dir = '/tmp/amazon-kinesis/dummy-stream-name';
-    exec("rm -r $store_dir");
+    if (file_exists($store_dir)) {
+      exec("rm -r $store_dir");
+    }
 
     $proxy = $this->getMockBuilder('Rf\Aws\Kinesis\ClientLibrary\KinesisProxy')
-      ->setMethods(array('getDataStore'))
+      ->setMethods(array('getDataStore', 'findWithMergeStoreShards'))
       ->disableOriginalConstructor()
       ->getMock();
 
     $proxy->expects($this->any())
       ->method('getDataStore')
       ->will($this->returnValue(new KinesisShardFileDataStore('/tmp/amazon-kinesis')));
+    $proxy->expects($this->any())
+      ->method('findWithMergeStoreShards')
+      ->will($this->returnValue(array()));
 
     $shard = new KinesisShard();
     $shard->setStreamName('dummy-stream-name');
     $shard->setShardId('dummy-shardId-000000000001');
     $shard->setSequenceNumber('234567891');
 
+    $proxy->initialize();
     $proxy->checkpoint($shard);
 
     $this->assertTrue(file_exists($store_dir . '/dummy-shardId-000000000001'));

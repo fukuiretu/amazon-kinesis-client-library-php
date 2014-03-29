@@ -20,7 +20,7 @@ $kinesis = KinesisClient::factory(array(
   'region' => Region::VIRGINIA
 ));
 
-$kinesis_proxy = KinesisProxy::factory($kinesis, new KinesisShardFileDataStore(), STREAM_NAME);
+$kinesis_proxy = KinesisProxy::factory($kinesis, new KinesisShardFileDataStore('/tmp/amazon-kinesis'), STREAM_NAME);
 $data_records = $kinesis_proxy->findDataRecords();
 
 foreach ($data_records as $data_record) {
