@@ -83,9 +83,4 @@ class KinesisShard
 
         return $this;
     }
-
-    public function toCsv()
-    {
-      return $this->$shard_id . ',' . $this->$sequence_number;
-    }
 }
