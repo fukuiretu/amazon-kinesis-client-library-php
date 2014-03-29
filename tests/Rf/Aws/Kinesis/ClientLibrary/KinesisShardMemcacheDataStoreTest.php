@@ -18,7 +18,6 @@ class KinesisShardMemcacheDataStoreTest extends \PHPUnit_Framework_TestCase
 
     $this->memcache = new \Memcache();
     $this->memcache->addServer('localhost', 11211);
-    $this->memcache->flush();
   }
 
   public function testModify_001()
