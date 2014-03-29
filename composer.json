@@ -1,5 +1,5 @@
 {
-    "name": "fukuiretu/amazon-kinesis-client-library-php",
+    "name": "rf/amazon-kinesis-client-library-php",
     "description": "Amazon Kinesis Wrapper Class",
     "keywords": ["Kinesis", "AWS", "Amazon Kinesis"],
     "type": "library",
@@ -7,11 +7,12 @@
     "homepage": "https://github.com/fukuiretu/amazon-kinesis-client-library-php",
     "authors": [
       {
-        "name": "Fukui Retu",
+        "name": "Fukui ReTu",
         "email": "s0232101@gmail.com"
       }
     ],
     "require": {
+        "php": ">=5.3.0",
         "aws/aws-sdk-php": "2.5.2"
     },
     "require-dev": {
