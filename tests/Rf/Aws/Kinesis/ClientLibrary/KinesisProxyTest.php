@@ -31,7 +31,7 @@ class KinesisProxyTest extends \PHPUnit_Framework_TestCase
     $proxy4 = KinesisProxy::factory($dummy_kinesis, $data_store, 'hoge', false);
 
     $this->assertTrue(spl_object_hash($proxy1) === spl_object_hash($proxy2));
-    $this->assertTrue(spl_object_hash($proxy1) === spl_object_hash($proxy3));
+    $this->assertFalse(spl_object_hash($proxy1) === spl_object_hash($proxy3));
     $this->assertFalse(spl_object_hash($proxy1) === spl_object_hash($proxy4));
   }
 
@@ -62,7 +62,7 @@ class KinesisProxyTest extends \PHPUnit_Framework_TestCase
     
     $proxy->expects($this->any())
         ->method('findOriginShards')
-        ->will($this->returnValue(array("dummy-shardId-000000000001" => $shard2)));
+        ->will($this->returnValue(array("dummy-shardId-000000000000" => $shard, "dummy-shardId-000000000001" => $shard2)));
 
     $result = $proxy->findWithMergeStoreShards();
     $this->assertCount(2, $result);
@@ -141,7 +141,6 @@ class KinesisProxyTest extends \PHPUnit_Framework_TestCase
     $shard = $result['dummy-shardId-000000000000'];
     $this->assertNull($shard->getStreamName());
     $this->assertEquals('dummy-shardId-000000000000', $shard->getShardId());
-    $this->assertEquals('123456789', $shard->getSequenceNumber());
   }
 
   public function testFindDataRecords_001()

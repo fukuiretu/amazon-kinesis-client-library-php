@@ -3,8 +3,11 @@
 namespace Rf\Aws\Kinesis\ClientLibrary\Entity;
 
 /**
- * AmazonKinesisのDataRecordに関するエンティティクラスです
- */
+* The entity class for DataRecord
+* 
+* @license MIT License (MIT)
+* @author FukuiReTu
+*/
 class KinesisDataRecord
 {
     private $stream_name;

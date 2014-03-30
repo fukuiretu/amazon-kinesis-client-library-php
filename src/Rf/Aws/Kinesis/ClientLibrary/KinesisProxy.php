@@ -10,8 +10,11 @@ use Rf\Aws\Kinesis\ClientLibrary\KinesisShardDataStore;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShardFileDataStore;
 
 /**
- * AmazonKinesisのShard、DataRecordに関するラッパークラスです
- */
+* Wrapper library of Amazon Kinesis Client(http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Kinesis.KinesisClient.html)
+*
+* @license MIT License (MIT)
+* @author FukuiReTu
+*/
 class KinesisProxy
 {
   private static $instances = array();
@@ -45,7 +48,7 @@ class KinesisProxy
 
   public static function factory(KinesisClient $kinesis, KinesisShardDataStore $data_store, $stream_name, $init = true)
   {
-    $key = sprintf("%s:%s:%s:%d", spl_object_hash($kinesis), get_class($data_store), $stream_name, $init);
+    $key = sprintf("%s:%s:%s:%d", spl_object_hash($kinesis), spl_object_hash($data_store), $stream_name, $init);
     if (!isset(self::$instances[$key])) {
       $instance = new self($kinesis, $data_store, $stream_name, $init);
       self::$instances[$key] = $instance;
@@ -67,21 +70,27 @@ class KinesisProxy
   public function findWithMergeStoreShards()
   {
     try {
-      $data_store = $this->getDataStore();
-      $shard_hash = $data_store->restore($this->stream_name);
+      $origin_shards = $this->findOriginShards();
 
-      $new_shard_hash = $this->findOriginShards(empty($shard_hash) ? array() : array_keys($shard_hash));
-      if (!empty($new_shard_hash)) {
-        $shard_hash = array_merge($shard_hash, $new_shard_hash);
+      $data_store = $this->getDataStore();
+      $restored_shards = $data_store->restore($this->stream_name);
+
+      foreach ($origin_shards as $origin_shard_id => $origin_shard) {
+        foreach ($restored_shards as $restored_shard_id => $restored_shard) {
+          if ($origin_shard->getShardId() === $restored_shard->getShardId()) {
+            $origin_shard->setSequenceNumber($restored_shard->getSequenceNumber());
+            break;
+          }
+        }
       }
     } catch (\Exception $e) {
       throw new KinesisProxyException($e->getMessage(), $e->getCode(), $e);
     }
 
-    return $shard_hash;
+    return $origin_shards;
   }
 
-  public function findOriginShards($ignore_shard_ids = array())
+  public function findOriginShards()
   {
     $result = array();
     try {
@@ -97,15 +106,9 @@ class KinesisProxy
         $shards = $stream_description['Shards'];
         foreach ($shards as $shard) {
           $shard_id = $shard['ShardId'];
-          if (in_array($shard_id, $ignore_shard_ids)) {
-            continue;
-          }
 
-          $sequence_number_range = $shard['SequenceNumberRange'];
-          $starting_sequence_number =  $sequence_number_range['StartingSequenceNumber'];
-          
           $shard_obj = new KinesisShard();
-          $shard_obj->setStreamName($this->stream_name)->setShardId($shard_id)->setSequenceNumber($starting_sequence_number);
+          $shard_obj->setStreamName($this->stream_name)->setShardId($shard_id);
 
           $result[$shard_id] = $shard_obj;
         }
@@ -151,7 +154,7 @@ class KinesisProxy
         if (!empty($data_records)) {
           $end_data_record = end($data_records);
           $shard->setSequenceNumber($end_data_record->getSequenceNumber());
-        }
+        } 
 
         $result = array_merge($result, $data_records);
       }
@@ -167,8 +170,9 @@ class KinesisProxy
     $result = array();
 
     $option = null;
-    if ($shard->getShardId() === '0') {
+    if ($shard->getSequenceNumber() === '0') {
       $option = array('StreamName' => $shard->getStreamName(),
+          'ShardId' => $shard->getShardId(),
           'ShardIteratorType' => 'TRIM_HORIZON'
       );
     } else {
@@ -180,7 +184,6 @@ class KinesisProxy
     }
 
     $kinesis = $this->getKinesis();
-
     $shard_iterator_result = $kinesis->getShardIterator($option);
 
     $shard_iterator = $shard_iterator_result['ShardIterator'];

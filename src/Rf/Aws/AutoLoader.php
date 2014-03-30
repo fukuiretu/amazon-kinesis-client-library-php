@@ -3,8 +3,11 @@
 namespace Rf\Aws;
 
 /**
-* クラスローダー
-*
+* Auto load the classes.
+* ※not necessary if you are using the composer
+* 
+* @license MIT License (MIT)
+* @author FukuiReTu
 */
 class AutoLoader
 {

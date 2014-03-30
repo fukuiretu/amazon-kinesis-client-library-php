@@ -5,6 +5,12 @@ namespace Rf\Aws\Kinesis\ClientLibrary;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShardDataStore;
 use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisShard;
 
+/**
+* Manipulating the storage to manage the Shard(memcached)
+* 
+* @license MIT License (MIT)
+* @author FukuiReTu
+*/
 class KinesisShardMemcacheDataStore implements KinesisShardDataStore
 {
   private $memcache;
@@ -49,11 +55,13 @@ class KinesisShardMemcacheDataStore implements KinesisShardDataStore
     $result = array();
 
     $items = $this->memcache->getStats( "items" );
-    foreach ($items['items'] as $slabId => $item) {
-      $cachedump = $this->memcache->getStats( 'cachedump', $slabId, $item['number'] );
-      foreach ($cachedump as $key => $val) {
-        if (strpos($key, $target_stream_name, 0) === 0) {
-          $result[] = $key;
+    if(isset($items['items'])) {
+      foreach ($items['items'] as $slabId => $item) {
+        $cachedump = $this->memcache->getStats( 'cachedump', $slabId, $item['number'] );
+        foreach ($cachedump as $key => $val) {
+          if (strpos($key, $target_stream_name, 0) === 0) {
+            $result[] = $key;
+          }
         }
       }
     }

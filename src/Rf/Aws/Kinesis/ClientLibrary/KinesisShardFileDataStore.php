@@ -5,6 +5,12 @@ namespace Rf\Aws\Kinesis\ClientLibrary;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShardDataStore;
 use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisShard;
 
+/**
+* Manipulating the storage to manage the Shard(File)
+* 
+* @license MIT License (MIT)
+* @author FukuiReTu
+*/
 class KinesisShardFileDataStore implements KinesisShardDataStore
 {
   private $data_store_dir;
@@ -50,11 +56,6 @@ class KinesisShardFileDataStore implements KinesisShardDataStore
 
     if ($dir_handle = opendir($store_dir)) {
       while (false !== ($file = readdir($dir_handle))) {
-          if (strpos($file, $target_stream_name, 0) !== 0) {
-            // 対象のストリームのみ絞り込む
-            continue;
-          }
-
           $file_handle = fopen($store_dir . '/' . $file, "r" );
           while ($shard_info = fgetcsv($file_handle)) {
             list($stream_name, $shard_id, $sequence_number) = $shard_info;

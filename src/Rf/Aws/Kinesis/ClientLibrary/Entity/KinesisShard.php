@@ -3,8 +3,11 @@
 namespace Rf\Aws\Kinesis\ClientLibrary\Entity;
 
 /**
- * AmazonKinesisのShard表現するエンティティクラスです
- */
+* The entity class for Shard
+* 
+* @license MIT License (MIT)
+* @author FukuiReTu
+*/
 class KinesisShard
 {
     private $stream_name;
