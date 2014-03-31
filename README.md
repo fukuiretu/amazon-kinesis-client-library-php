@@ -114,6 +114,12 @@ require 'src/Rf/Aws/AutoLoader.php';
 AutoLoader::register();
 ````
 
+### Specify ShardId, the acquisition number
+The following is an example to get the DataRecord of 10,000 (1000 * 10) matter at most from Shard of "shardId-000000000000"
+````
+$data_records = $kinesis_proxy->findDataRecords('shardId-000000000000', 1000, 10);
+````
+
 # Todos
 - Support the increase of storage. DynamoDB, Redis And More ...
 - Parallel processing.
