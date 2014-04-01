@@ -36,7 +36,7 @@ cp -r src/Rf <path/to/your_project>
 ````
 
 # Usage
-### CASE: Memache the Data Store
+### CASE: Memcache the Data Store
 
 ````
 <?php 
