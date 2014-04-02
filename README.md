@@ -8,6 +8,7 @@ Wrapper library of Amazon Kinesis Client Module.(http://docs.aws.amazon.com/aws-
 
 I want to simplify the management of Shard Id and Sequence Number taken out from the Stream. In addition, storage to manage is also an option.
 
+I refer to the https://github.com/awslabs/amazon-kinesis-client part. Thank you.
 
 # Requirements
 - PHP >= 5.3.3
@@ -115,10 +116,12 @@ AutoLoader::register();
 ````
 
 ### Specify ShardId, the acquisition number
-The following is an example to get the DataRecord of 10,000 (1000 * 10) matter at most from Shard of "shardId-000000000000"
+Against all shards, Get DataRecord matter up to 5,000(1000 record * 5 loop) by default.
+The following is an example to get the DataRecord of 10,000 (1000 record * 10 loop) matter at most from Shard of "shardId-000000000000"
 ````
 $data_records = $kinesis_proxy->findDataRecords('shardId-000000000000', 1000, 10);
 ````
+
 
 # Todos
 - Support the increase of storage. DynamoDB, Redis And More ...
