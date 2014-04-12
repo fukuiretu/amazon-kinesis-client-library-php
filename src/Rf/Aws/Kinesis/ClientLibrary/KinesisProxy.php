@@ -23,34 +23,18 @@ class KinesisProxy
 
   private $stream_name;
 
-  private $data_store;
-
-  private $shard_hash;
-
-  private $inited = false;
-
-  private function __construct(KinesisClient $kinesis, KinesisShardDataStore $data_store, $stream_name, $init = true)
+  private function __construct(KinesisClient $kinesis, $stream_name)
   {
     $this->kinesis = $kinesis;
     $this->data_store = $data_store;
     $this->stream_name = $stream_name;
-
-    if ($init) {
-      $this->initialize();
-    }
   }
 
-  public function initialize()
+  public static function factory(KinesisClient $kinesis, $stream_name)
   {
-    $this->shard_hash = $this->findWithMergeStoreShards();
-    $this->inited = true;
-  }
-
-  public static function factory(KinesisClient $kinesis, KinesisShardDataStore $data_store, $stream_name, $init = true)
-  {
-    $key = sprintf("%s:%s:%s:%d", spl_object_hash($kinesis), spl_object_hash($data_store), $stream_name, $init);
+    $key = sprintf("%s:%s:%s:%d", spl_object_hash($kinesis), $stream_name);
     if (!isset(self::$instances[$key])) {
-      $instance = new self($kinesis, $data_store, $stream_name, $init);
+      $instance = new self($kinesis, $stream_name);
       self::$instances[$key] = $instance;
     } 
 
@@ -62,35 +46,7 @@ class KinesisProxy
     return $this->kinesis;
   }
 
-  public function getDataStore()
-  {
-    return $this->data_store;
-  }
-
-  public function findWithMergeStoreShards()
-  {
-    try {
-      $origin_shards = $this->findOriginShards();
-
-      $data_store = $this->getDataStore();
-      $restored_shards = $data_store->restore($this->stream_name);
-
-      foreach ($origin_shards as $origin_shard_id => $origin_shard) {
-        foreach ($restored_shards as $restored_shard_id => $restored_shard) {
-          if ($origin_shard->getShardId() === $restored_shard->getShardId()) {
-            $origin_shard->setSequenceNumber($restored_shard->getSequenceNumber());
-            break;
-          }
-        }
-      }
-    } catch (\Exception $e) {
-      throw new KinesisProxyException($e->getMessage(), $e->getCode(), $e);
-    }
-
-    return $origin_shards;
-  }
-
-  public function findOriginShards()
+  public function findShards()
   {
     $result = array();
     try {
@@ -126,46 +82,7 @@ class KinesisProxy
     return $result;
   }
 
-  public function findDataRecords($target_shard_id = null, $limit = 1000, $max_loop_count = 5, $parallel = false)
-  {
-    if (!$this->inited) {
-      throw new KinesisProxyException("Can not use initialize because not yet.");
-    }
-
-    if ($parallel && !extension_loaded('pthreads')) {
-      throw new KinesisProxyException('pthreads is required');
-    }
-
-    try {
-      $result = array();
-      foreach ($this->shard_hash as $shard_id => $shard) {
-        if (!is_null($target_shard_id)) {
-          if ($target_shard_id !== $shard_id) {
-            continue;
-          }
-        }
-
-        if ($parallel) {
-          throw new \RuntimeException('parallel is not implemented');
-        } else {
-          $data_records = $this->_findDataRecords($shard, $limit, $max_loop_count);
-        }
-
-        if (!empty($data_records)) {
-          $end_data_record = end($data_records);
-          $shard->setSequenceNumber($end_data_record->getSequenceNumber());
-        } 
-
-        $result = array_merge($result, $data_records);
-      }
-    } catch (\Exception $e) {
-      throw new KinesisProxyException($e->getMessage(), $e->getCode(), $e);
-    }
-
-    return $result;
-  }
-
-  private function _findDataRecords(KinesisShard $shard, $limit, $max_loop_count)
+  public function findDataRecords(KinesisShard $shard, $limit, $max_loop_count)
   {
     $result = array();
 
@@ -210,26 +127,5 @@ class KinesisProxy
     }
 
     return $result;
-  }
-
-  public function checkpointAll()
-  {
-    foreach ($this->shard_hash as $shard_id => $shard) {
-      $this->checkpoint($shard);
-    }
-  }
-
-  public function checkpoint(KinesisShard $shard)
-  {
-    if (!$this->inited) {
-      throw new KinesisProxyException("Can not use initialize because not yet.");
-    }
-
-    try {
-      $data_store = $this->getDataStore();
-      $data_store->modify($shard);
-    } catch (\Exception $e) {
-      throw new KinesisProxyException($e->getMessage(), $e->getCode(), $e);
-    }
   }
 }
