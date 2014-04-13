@@ -8,7 +8,6 @@ Wrapper library of Amazon Kinesis Client Module.(http://docs.aws.amazon.com/aws-
 
 I want to simplify the management of Shard Id and Sequence Number taken out from the Stream. In addition, storage to manage is also an option.
 
-I refer to the https://github.com/awslabs/amazon-kinesis-client part. Thank you.
 
 # Requirements
 - PHP >= 5.3.3
@@ -62,14 +61,15 @@ $kinesis = KinesisClient::factory(array(
 $memcache = new Memcache();
 $memcache->addServer("localhost", 11211);
 
-$kinesis_proxy = KinesisProxy::factory($kinesis, new KinesisShardMemcacheDataStore($memcache), STREAM_NAME);
-$data_records = $kinesis_proxy->findDataRecords();
+$kinesis_proxy = KinesisProxy::factory($kinesis,  STREAM_NAME);
+$kinesis_storage_manager = new KinesisStorageManager($kinesis_proxy, new KinesisShardMemcacheDataStore($memcache));
 
+$data_records = $kinesis_storage_manager->findWithMergeStoreDataRecords(null, 10, 5);
 foreach ($data_records as $data_record) {
   echo $data_record->getData(), PHP_EOL;
 }
 
-$kinesis_proxy->checkpointAll();
+$kinesis_storage_manager->saveAll();
 
 ````
 
@@ -97,14 +97,15 @@ $kinesis = KinesisClient::factory(array(
   'region' => Region::VIRGINIA
 ));
 
-$kinesis_proxy = KinesisProxy::factory($kinesis, new KinesisShardFileDataStore('/tmp/amazon-kinesis'), STREAM_NAME);
-$data_records = $kinesis_proxy->findDataRecords();
+$kinesis_proxy = KinesisProxy::factory($kinesis, STREAM_NAME);
+$kinesis_storage_manager = new KinesisStorageManager($kinesis_proxy, new KinesisShardFileDataStore('/tmp/amazon-kinesis'));
 
+$data_records = $kinesis_storage_manager->findWithMergeStoreDataRecords(null, 10, 5);
 foreach ($data_records as $data_record) {
   echo $data_record->getData(), PHP_EOL;
 }
 
-$kinesis_proxy->checkpointAll();
+$kinesis_storage_manager->saveAll();
 
 ````
 
@@ -119,7 +120,7 @@ AutoLoader::register();
 Against all shards, Get DataRecord matter up to 5,000(1000 record * 5 loop) by default.
 The following is an example to get the DataRecord of 10,000 (1000 record * 10 loop) matter at most from Shard of "shardId-000000000000"
 ````
-$data_records = $kinesis_proxy->findDataRecords('shardId-000000000000', 1000, 10);
+$data_records = $kinesis_storage_manager->findWithMergeStoreDataRecords('shardId-000000000000', 1000, 10);
 ````
 
 
