@@ -1,4 +1,4 @@
-amazon-kinesis-client-library-php 
+amazon-kinesis-client-library-php
 =================================
 [![Build Status](https://travis-ci.org/fukuiretu/amazon-kinesis-client-library-php.svg?branch=0.0.1)](https://travis-ci.org/fukuiretu/amazon-kinesis-client-library-php)
 
@@ -36,10 +36,40 @@ cp -r src/Rf <path/to/your_project>
 ````
 
 # Usage
+### CASE: Data push
+
+````
+require 'vendor/autoload.php';
+
+use Aws\Kinesis\KinesisClient;
+use Aws\Common\Enum\Region;
+use Rf\Aws\AutoLoader;
+use Rf\Aws\Kinesis\ClientLibrary\KinesisProxy;
+use Rf\Aws\Kinesis\ClientLibrary\KinesisShardFileDataStore;
+use Rf\Aws\Kinesis\ClientLibrary\KinesisShardMemcacheDataStore;
+use Rf\Aws\Kinesis\ClientLibrary\KinesisStorageManager;
+
+define('STREAM_NAME', 'kinesis-trial');
+$kinesis = KinesisClient::factory(array(
+  'key' => 'XXXXX',
+  'secret' => 'XXXXX',
+  'region' => Region::VIRGINIA
+));
+$kinesis_proxy = KinesisProxy::factory($kinesis, STREAM_NAME);
+
+while (true) {
+    $sample_data = date('YmdHis');
+    $kinesis_proxy->putRecord($sample_data, mt_rand(1, 1000000));
+
+    echo $sample_data, PHP_EOL;
+    sleep(1);
+}
+````
+
 ### CASE: Memcache the Data Store
 
 ````
-<?php 
+<?php
 
 require 'vendor/autoload.php';
 
@@ -77,7 +107,7 @@ $kinesis_storage_manager->saveAll();
 
 ````
 
-<?php 
+<?php
 
 require 'vendor/autoload.php';
 
