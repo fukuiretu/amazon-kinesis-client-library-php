@@ -50,6 +50,7 @@ use Rf\Aws\Kinesis\ClientLibrary\KinesisProxy;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShard;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShardFileDataStore;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShardMemcacheDataStore;
+use Rf\Aws\Kinesis\ClientLibrary\KinesisStorageManager;
 
 define('STREAM_NAME', 'kinesis-trial');
 $kinesis = KinesisClient::factory(array(
@@ -88,6 +89,7 @@ use Rf\Aws\Kinesis\ClientLibrary\KinesisProxy;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShard;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShardFileDataStore;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShardMemcacheDataStore;
+use Rf\Aws\Kinesis\ClientLibrary\KinesisStorageManager;
 
 define('STREAM_NAME', 'kinesis-trial');
 
