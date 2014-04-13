@@ -4,6 +4,7 @@ namespace Rf\Aws\Kinesis\ClientLibrary;
 
 use Rf\Aws\Kinesis\ClientLibrary\KinesisProxy;
 use Rf\Aws\Kinesis\ClientLibrary\KinesisShardDataStore;
+use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisShard;
 
 /**
 *
@@ -27,7 +28,7 @@ class KinesisStorageManager
   public function findWithMergeStoreShards()
   {
     $origin_shards = $this->kinesis_proxy->findShards();
-    $restored_shards = $this->$data_store->restore($this->$kinesis_proxy->getStreamName());
+    $restored_shards = $this->data_store->restore($this->kinesis_proxy->getStreamName());
 
     foreach ($origin_shards as $origin_shard_id => $origin_shard) {
       foreach ($restored_shards as $restored_shard_id => $restored_shard) {
@@ -66,7 +67,7 @@ class KinesisStorageManager
       $result = array_merge($result, $data_records);
     }
 
-    $this->$shards = $origin_shards;
+    $this->shards = $shards;
 
     return $result;
   }
@@ -84,7 +85,7 @@ class KinesisStorageManager
 
   public function save(KinesisShard $shard)
   {
-      $data_store = $this->$data_store;
+      $data_store = $this->data_store;
       $data_store->modify($shard);
   }
 }

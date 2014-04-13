@@ -24,8 +24,12 @@ class KinesisProxy
   private function __construct(KinesisClient $kinesis, $stream_name)
   {
     $this->kinesis = $kinesis;
-    $this->data_store = $data_store;
     $this->stream_name = $stream_name;
+  }
+
+  public function getStreamName()
+  {
+    return $this->stream_name;
   }
 
   public static function factory(KinesisClient $kinesis, $stream_name)
@@ -62,7 +66,8 @@ class KinesisProxy
           $shard_id = $shard['ShardId'];
 
           $shard_obj = new KinesisShard();
-          $shard_obj->setStreamName($this->stream_name)->setShardId($shard_id);
+          $shard_obj->setStreamName($this->stream_name)
+            ->setShardId($shard_id);
 
           $result[$shard_id] = $shard_obj;
         }
@@ -129,13 +134,13 @@ class KinesisProxy
     return $result;
   }
 
-  public function putRecord(KinesisDataRecord $data_record)
+  public function putRecord($data, $partitionKey)
   {
     try {
-      $result = $kinesis->putRecord(array(
+      $result = $this->kinesis->putRecord(array(
           'StreamName' => $this->stream_name,
-          'Data' => $data_record->getData(),
-          'PartitionKey' => $data_record->getPartitionKey()
+          'Data' => $data,
+          'PartitionKey' => $partitionKey
       ));
     } catch (\Exception $e) {
       throw new KinesisProxyException($e->getMessage(), $e->getCode(), $e);

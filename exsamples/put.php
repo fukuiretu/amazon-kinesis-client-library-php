@@ -3,6 +3,9 @@ require '../vendor/autoload.php';
 
 use Aws\Kinesis\KinesisClient;
 use Aws\Common\Enum\Region;
+use Rf\Aws\Kinesis\ClientLibrary\KinesisProxy;
+
+define('STREAM_NAME', 'kinesis-trial');
 
 $kinesis = KinesisClient::factory(array(
   'key' => 'XXXXX',
@@ -10,19 +13,12 @@ $kinesis = KinesisClient::factory(array(
   'region' => Region::VIRGINIA
 ));
 
+$kinesis_proxy = KinesisProxy::factory($kinesis, STREAM_NAME);
+
 while (true) {
     $sample_data = date('YmdHis');
+    $kinesis_proxy->putRecord($sample_data, mt_rand(1, 1000000));
 
-    $result = $kinesis->putRecord(array(
-        // StreamName is required
-        'StreamName' => 'kinesis-trial',
-        // Data is required
-        'Data' => $sample_data,
-        // PartitionKey is required
-        'PartitionKey' => mt_rand(1, 1000000),
-        // 'ExplicitHashKey' => 'string',
-        // 'SequenceNumberForOrdering' => '1'
-    ));
     echo $sample_data, PHP_EOL;
     sleep(1);
 }
