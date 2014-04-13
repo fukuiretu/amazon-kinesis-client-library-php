@@ -2,6 +2,9 @@
 
 namespace Rf\Aws\Kinesis\ClientLibrary;
 
+use Rf\Aws\Kinesis\ClientLibrary\KinesisProxy;
+use Rf\Aws\Kinesis\ClientLibrary\KinesisShardDataStore;
+
 /**
 *
 * @license MIT License (MIT)
@@ -15,7 +18,7 @@ class KinesisStorageManager
 
   private $shards;
 
-  public function __construct($kinesis_proxy, $data_store)
+  public function __construct(KinesisProxy $kinesis_proxy, KinesisShardDataStore $data_store)
   {
     $this->kinesis_proxy = $kinesis_proxy;
     $this->data_store = $data_store;
@@ -35,17 +38,11 @@ class KinesisStorageManager
       }
     }
 
-    $this->$shards = $origin_shards;
-
     return $origin_shards;
   }
 
   public function findWithMergeStoreDataRecords($target_shard_id = null, $limit = 1000, $max_loop_count = 5, $parallel = false)
   {
-    if ($parallel && !extension_loaded('pthreads')) {
-      throw new KinesisProxyException('pthreads is required');
-    }
-
     $result = array();
     $shards = $this->findWithMergeStoreShards();
     foreach ($shards as $shard_id => $shard) {
@@ -56,7 +53,7 @@ class KinesisStorageManager
       }
 
       if ($parallel) {
-        throw new \RuntimeException('parallel is not implemented');
+        throw new \RuntimeException('parallel is not implemented. Sorry...');
       } else {
         $data_records = $this->kinesis_proxy->findDataRecords($shard, $limit, $max_loop_count);
       }
@@ -69,27 +66,25 @@ class KinesisStorageManager
       $result = array_merge($result, $data_records);
     }
 
+    $this->$shards = $origin_shards;
+
     return $result;
   }
 
-  public function checkpointAll()
+  public function saveAll()
   {
     if (is_null($this->shards)) {
-      throw new KinesisProxyException("Can not use initialize because not yet.");
+      throw new \RuntimeException("Can not use initialize because not yet.");
     }
 
     foreach ($this->shards as $shard_id => $shard) {
-      $this->checkpoint($shard);
+      $this->save($shard);
     }
   }
 
-  public function checkpoint(KinesisShard $shard)
+  public function save(KinesisShard $shard)
   {
-    try {
-      $data_store = $this->getDataStore();
+      $data_store = $this->$data_store;
       $data_store->modify($shard);
-    } catch (\Exception $e) {
-      throw new KinesisProxyException($e->getMessage(), $e->getCode(), $e);
-    }
   }
 }

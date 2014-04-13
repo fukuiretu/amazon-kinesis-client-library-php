@@ -6,8 +6,6 @@ use Aws\Kinesis\KinesisClient;
 use Rf\Aws\Kinesis\ClientLibrary\Exception\KinesisProxyException;
 use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisShard;
 use Rf\Aws\Kinesis\ClientLibrary\Entity\KinesisDataRecord;
-use Rf\Aws\Kinesis\ClientLibrary\KinesisShardDataStore;
-use Rf\Aws\Kinesis\ClientLibrary\KinesisShardFileDataStore;
 
 /**
 * Wrapper library of Amazon Kinesis Client(http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Kinesis.KinesisClient.html)
@@ -32,7 +30,7 @@ class KinesisProxy
 
   public static function factory(KinesisClient $kinesis, $stream_name)
   {
-    $key = sprintf("%s:%s:%s:%d", spl_object_hash($kinesis), $stream_name);
+    $key = sprintf("%s:%s", spl_object_hash($kinesis), $stream_name);
     if (!isset(self::$instances[$key])) {
       $instance = new self($kinesis, $stream_name);
       self::$instances[$key] = $instance;
@@ -69,7 +67,6 @@ class KinesisProxy
           $result[$shard_id] = $shard_obj;
         }
 
-        // HasMoreShardsでまだshardがあるかチェック
         $has_more_shards = $stream_description['HasMoreShards'];
         if (!$has_more_shards) {
           break;
@@ -113,8 +110,11 @@ class KinesisProxy
         $records = $get_records_result['Records'];
         foreach ($records as $record) {
           $data_record = new KinesisDataRecord();
-          $data_record->setStreamName($shard->getStreamName())->setShardId($shard->getShardId())->setSequenceNumber($record['SequenceNumber'])
-            ->setData($record['Data'])->setPartitionKey($record['PartitionKey']);
+          $data_record->setStreamName($shard->getStreamName())
+            ->setShardId($shard->getShardId())
+            ->setSequenceNumber($record['SequenceNumber'])
+            ->setData($record['Data'])
+            ->setPartitionKey($record['PartitionKey']);
 
           $result[] = $data_record;
         }
@@ -124,6 +124,21 @@ class KinesisProxy
         }
 
         $shard_iterator = $get_records_result['NextShardIterator'];
+    }
+
+    return $result;
+  }
+
+  public function putRecord(KinesisDataRecord $data_record)
+  {
+    try {
+      $result = $kinesis->putRecord(array(
+          'StreamName' => $this->stream_name,
+          'Data' => $data_record->getData(),
+          'PartitionKey' => $data_record->getPartitionKey()
+      ));
+    } catch (\Exception $e) {
+      throw new KinesisProxyException($e->getMessage(), $e->getCode(), $e);
     }
 
     return $result;
