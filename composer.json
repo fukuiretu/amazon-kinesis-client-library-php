@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": ">=5.3.3",
-        "aws/aws-sdk-php": "2.5.2"
+        "aws/aws-sdk-php": "^2"
     },
     "require-dev": {
         "phpunit/phpunit": "4.0.9"
